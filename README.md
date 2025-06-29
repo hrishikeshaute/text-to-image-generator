@@ -18,3 +18,5 @@ Text-to-image-generator
  This tool complies with Google’s Generative AI terms and Responsible AI practices.
  All prompts and outputs are used for educational/demo purposes. We avoid any copyrighted, trademarked, or inappropriate content generation.
 💬 Made this for fun, learning, and showcasing prompt-to-image AI UX in action. If you’re building in AI or frontend, let’s connect — or DM me for code or suggestions!
+
+![1](https://github.com/user-attachments/assets/7520f6b6-bcc4-4d71-ae7f-3cf0e70d29ad)
