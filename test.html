@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Next-Gen AI Image Generator 2.0</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(to bottom, #1a202c, #2d3748, #1a202c);
+      min-height: 100vh;
+      color: #e2e8f0;
+      scroll-behavior: smooth;
+    }
+    .section-gradient {
+      background: linear-gradient(to right, #2d3748, #4a5568);
+    }
+    .fancy-button {
+      background: linear-gradient(45deg, #6366f1, #a855f7);
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+    }
+    .fancy-button:hover {
+      background: linear-gradient(45deg, #4f46e5, #9333ea);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
+      transform: translateY(-2px) scale(1.02);
+    }
+    .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid #818cf8;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .fragment-tag {
+      background-color: #1b102d;
+      color: white;
+      padding: 0.4em 0.75em;
+      border-radius: 9999px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      transition: background-color 0.3s ease;
+    }
+    .fragment-tag:hover {
+      background-color: #4a345f;
+    }
+  </style>
+</head>
+<body class="antialiased">
+
+  <header class="w-full py-10 bg-gray-900 text-center">
+    <h1 class="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600 animate-pulse">
+      Imagine Anything Create Everything with Next-Gen
+    </h1>
+    <p class="mt-4 text-xl text-gray-300">
+      Unleash your creativity with our Next-Gen AI Image Generator.
+    </p>
+  </header>
+
+  <main class="container mx-auto p-6 max-w-4xl">
+    <div class="mb-4">
+      <label for="promptInput" class="block mb-2 text-lg font-medium">Image Prompt</label>
+      <input id="promptInput" type="text" class="w-full p-4 rounded bg-gray-700 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500" placeholder="e.g., A cyberpunk cat wearing neon glasses in a rainy alley">
+    </div>
+
+    <div class="grid grid-cols-2 gap-4 mb-4">
+      <div>
+        <label for="widthInput" class="block mb-1 text-sm">Width (px)</label>
+        <input id="widthInput" type="number" value="1024" min="256" max="1024" step="64" class="w-full p-3 rounded bg-gray-700 text-white focus:ring-2 focus:ring-blue-500">
+      </div>
+      <div>
+        <label for="heightInput" class="block mb-1 text-sm">Height (px)</label>
+        <input id="heightInput" type="number" value="1024" min="256" max="1024" step="64" class="w-full p-3 rounded bg-gray-700 text-white focus:ring-2 focus:ring-blue-500">
+      </div>
+    </div>
+
+    <button id="generateButton" class="w-full fancy-button text-white font-semibold py-4 px-6 rounded-lg text-xl">Generate Image</button>
+
+    <div id="loadingIndicator" class="hidden flex items-center justify-center space-x-3 text-white mt-6">
+      <div class="spinner"></div>
+      <span>Generating your masterpiece...</span>
+    </div>
+
+    <div id="errorMessage" class="hidden bg-red-600 text-white p-3 rounded-lg text-center mt-6"></div>
+
+    <div id="imageContainer" class="bg-gray-700 rounded-lg border border-gray-600 shadow-inner flex items-center justify-center min-h-[300px] mt-8 p-4">
+      <img id="generatedImage" src="" alt="Generated AI Image" class="hidden w-full h-auto object-contain rounded-lg">
+      <p id="placeholderText" class="text-gray-400 text-lg">Your incredible AI-generated image will appear here!</p>
+    </div>
+
+    <div class="mt-6 flex flex-wrap gap-4 justify-center">
+      <button id="downloadBtn" class="fancy-button py-2 px-4 rounded text-white">📁 Download</button>
+      <button id="shareBtn" class="fancy-button py-2 px-4 rounded text-white">🔗 Share</button>
+      <button id="publishBtn" class="fancy-button py-2 px-4 rounded text-white">🌐 Publish</button>
+      <button id="remixBtn" class="fancy-button py-2 px-4 rounded text-white">🔁 Regenerate / Remix</button>
+    </div>
+
+    <div class="mt-6 text-center">
+      <h3 class="text-white text-lg mb-2">🧩 Drag Tags Into Your Prompt</h3>
+      <div id="promptFragments" class="flex flex-wrap gap-2 justify-center">
+        <span class="fragment-tag">castle</span>
+        <span class="fragment-tag">space</span>
+        <span class="fragment-tag">cyberpunk</span>
+        <span class="fragment-tag">dragon</span>
+        <span class="fragment-tag">ocean</span>
+        <span class="fragment-tag">moonlight</span>
+      </div>
+    </div>
+
+    <section class="py-8 bg-gray-900 mt-12 rounded-xl shadow-xl p-4">
+      <h2 class="text-2xl text-white font-bold mb-4">🖼️ My Gallery</h2>
+      <div id="gallery" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+    </section>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const GOOGLE_IMAGEN_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict";
+      const GOOGLE_API_KEY = "AIzaSyAQ4XgSGrqUN1zaGuJynTTnUZqys_aiYdk";
+
+      const downloadBtn = document.getElementById('downloadBtn');
+      const shareBtn = document.getElementById('shareBtn');
+      const publishBtn = document.getElementById('publishBtn');
+      const remixBtn = document.getElementById('remixBtn');
+      const generateButton = document.getElementById('generateButton');
+      const promptInput = document.getElementById('promptInput');
+      const widthInput = document.getElementById('widthInput');
+      const heightInput = document.getElementById('heightInput');
+      const generatedImage = document.getElementById('generatedImage');
+      const placeholderText = document.getElementById('placeholderText');
+      const loadingIndicator = document.getElementById('loadingIndicator');
+      const errorMessage = document.getElementById('errorMessage');
+      const gallery = document.getElementById('gallery');
+
+      downloadBtn.addEventListener('click', () => {
+        const link = document.createElement('a');
+        link.href = generatedImage.src;
+        link.download = 'ai-image.png';
+        link.click();
+      });
+
+      shareBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(generatedImage.src)
+          .then(() => alert('Image URL copied to clipboard!'))
+          .catch(err => alert('Failed to copy: ' + err));
+      });
+
+      publishBtn.addEventListener('click', () => {
+        alert('Published to your public gallery! (Demo placeholder)');
+      });
+
+      remixBtn.addEventListener('click', () => {
+        promptInput.value += ' remix';
+        generateImageAction();
+      });
+
+      document.querySelectorAll('.fragment-tag').forEach(tag => {
+        tag.addEventListener('click', () => {
+          promptInput.value += ' ' + tag.textContent;
+        });
+      });
+
+      generateButton.addEventListener('click', generateImageAction);
+
+      async function generateImageAction() {
+        const prompt = promptInput.value.trim();
+        const width = parseInt(widthInput.value, 10);
+        const height = parseInt(heightInput.value, 10);
+
+        generatedImage.src = '';
+        generatedImage.classList.add('hidden');
+        errorMessage.classList.add('hidden');
+        placeholderText.classList.remove('hidden');
+
+        if (!prompt) {
+          errorMessage.textContent = 'Please enter a prompt to generate an image.';
+          errorMessage.classList.remove('hidden');
+          return;
+        }
+
+        if (isNaN(width) || isNaN(height) || width < 256 || width > 1024 || height < 256 || height > 1024) {
+          errorMessage.textContent = 'Please enter valid width and height values (256-1024px).';
+          errorMessage.classList.remove('hidden');
+          return;
+        }
+
+        loadingIndicator.classList.remove('hidden');
+        generateButton.disabled = true;
+
+        const payload = {
+          instances: { prompt },
+          parameters: { sampleCount: 1 }
+        };
+
+        try {
+          const response = await fetch(`${GOOGLE_IMAGEN_API_URL}?key=${GOOGLE_API_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          const result = await response.json();
+
+          if (!result.predictions?.[0]?.bytesBase64Encoded) {
+            throw new Error('Invalid image data received');
+          }
+
+          const imageUrl = `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
+          generatedImage.src = imageUrl;
+          generatedImage.classList.remove('hidden');
+          placeholderText.classList.add('hidden');
+
+          const clone = generatedImage.cloneNode();
+          clone.classList.remove('hidden');
+          clone.classList.add('rounded', 'border', 'border-gray-500');
+          gallery.prepend(clone);
+
+        } catch (error) {
+          errorMessage.textContent = `Error: ${error.message}`;
+          errorMessage.classList.remove('hidden');
+        } finally {
+          loadingIndicator.classList.add('hidden');
+          generateButton.disabled = false;
+        }
+      }
+    });
+  </script>
+</body>
+</html>
